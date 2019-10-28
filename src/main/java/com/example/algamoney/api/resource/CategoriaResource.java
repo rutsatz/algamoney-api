@@ -41,7 +41,9 @@ public class CategoriaResource {
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{codigo}")
 				.buildAndExpand(categoriaSalva.getCodigo()).toUri();
 		// Adiciona a nova URI no header.
-		response.setHeader("Location", uri.toASCIIString());
+		// Na nova versão do Spring, não é mais necessário adicionar manualmente, o
+		// próprio Spring já adiciona.
+//		response.setHeader("Location", uri.toASCIIString());
 
 		return ResponseEntity.created(uri).body(categoriaSalva);
 	}
