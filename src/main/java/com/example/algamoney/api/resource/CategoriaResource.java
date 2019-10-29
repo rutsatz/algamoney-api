@@ -1,12 +1,13 @@
 package com.example.algamoney.api.resource;
 
-import java.net.URI;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,8 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.example.algamoney.api.event.RecursoCriadoEvent;
 import com.example.algamoney.api.model.Categoria;
 import com.example.algamoney.api.repository.CategoriaRepository;
 
@@ -26,6 +27,9 @@ public class CategoriaResource {
 	@Autowired
 	private CategoriaRepository categoriaRepository;
 
+	@Autowired
+	private ApplicationEventPublisher publisher;
+
 	@GetMapping
 	public List<Categoria> listar() {
 		return categoriaRepository.findAll();
@@ -35,18 +39,10 @@ public class CategoriaResource {
 //	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Categoria> criar(@Valid @RequestBody Categoria categoria, HttpServletResponse response) {
 		Categoria categoriaSalva = categoriaRepository.save(categoria);
-		// No Rest, sempre que criamos um recurso, devemos retornar um header com o
-		// location apontando para ele. Nesse caso, criamos usando o builder do Spring,
-		// pegando a requisição atual e gerando uma nova uri, fazendo um append na url
-		// atual e depois fazendo o replace pelo código. O Bulder retorna a nova URI.
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{codigo}")
-				.buildAndExpand(categoriaSalva.getCodigo()).toUri();
-		// Adiciona a nova URI no header.
-		// Na nova versão do Spring, não é mais necessário adicionar manualmente, o
-		// próprio Spring já adiciona.
-//		response.setHeader("Location", uri.toASCIIString());
 
-		return ResponseEntity.created(uri).body(categoriaSalva);
+		publisher.publishEvent(new RecursoCriadoEvent(this, response, categoriaSalva.getCodigo()));
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(categoriaSalva);
 	}
 
 	@GetMapping("/{codigo}")
