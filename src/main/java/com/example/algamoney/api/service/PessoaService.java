@@ -15,10 +15,7 @@ public class PessoaService {
 	private PessoaRepository pessoaRepository;
 
 	public Pessoa atualizar(Long codigo, Pessoa pessoa) {
-		Pessoa pessoaSalva = this.pessoaRepository.findById(codigo)
-				// Se não encontrou row, lança a exceção, para manter o tratamento e retornar o
-				// Http 404.
-				.orElseThrow(() -> new EmptyResultDataAccessException(1));
+		Pessoa pessoaSalva = buscarPessoaPeloCodigo(codigo);
 
 		// Copia as propriedades de um objeto para outro. Eu passo a origem, o destino e
 		// uma lista de propriedades para ignorar. Então copio os dados do objeto
@@ -28,6 +25,20 @@ public class PessoaService {
 		BeanUtils.copyProperties(pessoa, pessoaSalva, "codigo");
 
 		return this.pessoaRepository.save(pessoaSalva);
+	}
+
+	public void atualizarPropriedadeAtivo(Long codigo, Boolean ativo) {
+		Pessoa pessoaSalva = buscarPessoaPeloCodigo(codigo);
+		pessoaSalva.setAtivo(ativo);
+		pessoaRepository.save(pessoaSalva);
+	}
+
+	private Pessoa buscarPessoaPeloCodigo(Long codigo) {
+		Pessoa pessoaSalva = this.pessoaRepository.findById(codigo)
+				// Se não encontrou row, lança a exceção, para manter o tratamento e retornar o
+				// Http 404.
+				.orElseThrow(() -> new EmptyResultDataAccessException(1));
+		return pessoaSalva;
 	}
 
 }
