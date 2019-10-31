@@ -33,7 +33,7 @@ public class PessoaService {
 		pessoaRepository.save(pessoaSalva);
 	}
 
-	private Pessoa buscarPessoaPeloCodigo(Long codigo) {
+	public Pessoa buscarPessoaPeloCodigo(Long codigo) {
 		Pessoa pessoaSalva = this.pessoaRepository.findById(codigo)
 				// Se não encontrou row, lança a exceção, para manter o tratamento e retornar o
 				// Http 404.
