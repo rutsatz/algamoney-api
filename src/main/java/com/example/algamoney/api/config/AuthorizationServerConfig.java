@@ -9,7 +9,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 /**
  * Configura o servidor de autorização.
@@ -69,15 +70,33 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 		endpoints
 				// Eu preciso armazenar esses tokens em algum lugar. Onde? Num TokenStore.
 				.tokenStore(tokenStore())
+				// Como mudamos do token oAuth para o JWT, precisamos adicionar um token
+				// converter.
+				.accessTokenConverter(accessTokenConverter())
 				// Passa o manager dos tokens, para ele poder validar os tokens recebidos.
 				.authenticationManager(authenticationManager);
+	}
+
+	/**
+	 * Faz a conversão entre tokens JWT e tokens oAuth. Quem precisar de um token
+	 * converter, consegue recuperar através deste bean.
+	 *
+	 * @return
+	 */
+	@Bean
+	public JwtAccessTokenConverter accessTokenConverter() {
+		JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();
+		// Seta a chave que valida o token. É o campo secret do token.
+		accessTokenConverter.setSigningKey("algaworks");
+		return accessTokenConverter;
 	}
 
 	@Bean
 	public TokenStore tokenStore() {
 		// Armazena os tokens em memória, por enquanto. Depois será usado o token JWT,
 		// que não precisa ser armazenado assim.
-		return new InMemoryTokenStore();
+//		return new InMemoryTokenStore();
+		return new JwtTokenStore(accessTokenConverter());
 	}
 
 }
