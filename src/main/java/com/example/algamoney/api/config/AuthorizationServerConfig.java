@@ -59,10 +59,18 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 				// Defino o tipo de fluxo oAuth que vou usar (password flow).Defino o Grant Type
 				// como password flow. Faço isso quando a aplicação cliente
 				// é de inteira confiança, pois ela vai ter acesso a senha do usuário.
-				.authorizedGrantTypes("password")
+				// Também adiciona o fluxo de refresh token. Dessa forma, quando um token
+				// expira, ao invés de fazer um request novo, mandando o usuário e senha, é
+				// solicitado um refresh token. E esse token do refresh é salvo num cookie
+				// https, que o próprio browser vai mandar, ou seja, esse token não vai ser
+				// acessível por javascript. Abaixo, também é configurado o tempo de validade
+				// desse refresh token.
+				.authorizedGrantTypes("password", "refresh_token")
 				// Defino quantos segundos esse token vai ficar ativo. (1800 s = 30 min). Então,
 				// consigo usar o mesmo token por 30 minutos.
-				.accessTokenValiditySeconds(1800);
+				.accessTokenValiditySeconds(20)
+				// Configura a validade do refresh token para durar 1 dia.
+				.refreshTokenValiditySeconds(3600 * 24);
 	}
 
 	@Override
@@ -73,6 +81,13 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 				// Como mudamos do token oAuth para o JWT, precisamos adicionar um token
 				// converter.
 				.accessTokenConverter(accessTokenConverter())
+				// Setando para não reusar o refresh token, sempre que eu pedir um novo access
+				// token usando o refresh token, um novo refresh token é gerado. Então, enquanto
+				// o usuário estiver usando a aplicação, ele não vai ser deslogado, pois o
+				// refresh token não vai expirar e assim vamos conseguir ficar buscando novos
+				// access tokens. Se não setarmos isso, o refresh token vai ter o tempo de 24h e
+				// depois disse vai expirar e o usuário vai precisar logar novamente.
+				.reuseRefreshTokens(false)
 				// Passa o manager dos tokens, para ele poder validar os tokens recebidos.
 				.authenticationManager(authenticationManager);
 	}
