@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -29,6 +30,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	@Autowired
 	private AuthenticationManager authenticationManager;
 
+	@Autowired
+	private UserDetailsService userDetailsService;
+
 	/**
 	 * Configura a aplicação, ou seja, o cliente. No exemplo do facebook, seria o
 	 * site terceiro, que solicita o token.
@@ -50,7 +54,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 				// por exemplo, admin/admin. Passa também o grant_type, que é password. Se
 				// estiver correto, ele retorna o token, que o cliente pode usar para acessar a
 				// api.
-				.secret("@ngul@r0")
+//				.secret("@ngul@r0")
+				.secret("$2a$10$G1j5Rf8aEEiGc/AET9BA..xRR.qCpOUzBZoJd8ygbGy6tb3jsMT9G")
 				// E também passo uma lista de escopos desse cliente. Com isso, eu consigo
 				// limitar o acesso desse cliente. Dessa forma, posso definir escopos diferentes
 				// para clientes diferentes. Essa strings, sou eu que defino. Depois eu uso elas
@@ -68,7 +73,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 				.authorizedGrantTypes("password", "refresh_token")
 				// Defino quantos segundos esse token vai ficar ativo. (1800 s = 30 min). Então,
 				// consigo usar o mesmo token por 30 minutos.
-				.accessTokenValiditySeconds(20)
+				.accessTokenValiditySeconds(1800)
 				// Configura a validade do refresh token para durar 1 dia.
 				.refreshTokenValiditySeconds(3600 * 24);
 	}
@@ -88,6 +93,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 				// access tokens. Se não setarmos isso, o refresh token vai ter o tempo de 24h e
 				// depois disse vai expirar e o usuário vai precisar logar novamente.
 				.reuseRefreshTokens(false)
+
+				.userDetailsService(this.userDetailsService)
+
 				// Passa o manager dos tokens, para ele poder validar os tokens recebidos.
 				.authenticationManager(authenticationManager);
 	}
