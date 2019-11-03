@@ -75,6 +75,10 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 				// consigo usar o mesmo token por 30 minutos.
 				.accessTokenValiditySeconds(1800)
 				// Configura a validade do refresh token para durar 1 dia.
+				.refreshTokenValiditySeconds(3600 * 24)
+				//
+				.and().withClient("mobile").secret("m0b1l30").scopes("read")
+				.authorizedGrantTypes("password", "refresh_token").accessTokenValiditySeconds(1800)
 				.refreshTokenValiditySeconds(3600 * 24);
 	}
 
